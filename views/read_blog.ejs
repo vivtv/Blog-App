@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Future of Web Development - SkyBlog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-4 text-gray-600 hover:text-sky-600 transition-colors">
+                        ← Back
+                    </button>
+                    <!-- <h1 class="text-2xl font-bold text-sky-600">SkyBlog</h1> -->
+                    <h1 class="text-2xl font-bold text-sky-600"><a href="index.html">SkyBlog</a></h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#" class="text-gray-700 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</a>
+                        <a href="#" class="text-gray-700 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">About</a>
+                        <a href="#" class="text-gray-700 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Categories</a>
+                        <a href="#" class="text-gray-700 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Contact</a>
+                    </div>
+                </div>
+                <% if (!user) { %>
+                <button class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" onclick="location.href='/login'">
+                    Sign In
+                </button>
+                <% } else { %>
+                <div class="flex items-center space-x-3">
+                    <button class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" onclick="location.href='/post_blog'">
+                        Write Post
+                    </button>
+                    <button class="border border-sky-500 text-sky-600 hover:bg-sky-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors" onclick="location.href='/logout'">
+                        Logout
+                    </button>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-8">
+                <div class="flex items-center justify-center mb-4">
+                    <span class="bg-sky-100 text-sky-600 px-4 py-2 rounded-full text-sm font-medium"><%= blog.category_title || 'General' %></span>
+                    <span class="text-gray-500 text-sm ml-4"><%= new Date(blog.blog_datetime).toLocaleDateString() %> • 5 min read</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6 leading-tight">
+                    <%= blog.blog_title %>
+                </h1>
+                <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                    <%= blog.blog_detail.replace(/<[^>]*>/g, '').substring(0, 200) %>...
+                </p>
+            </div>
+            
+            <!-- Author Info -->
+            <div class="flex items-center justify-center mb-8">
+                <div class="flex items-center bg-white/70 backdrop-blur-sm rounded-full px-6 py-4 shadow-lg">
+                    <div class="w-12 h-12 bg-sky-200 rounded-full flex items-center justify-center mr-4">
+                        <span class="text-sky-600 font-bold"><%= (blog.first_name || blog.blog_author || 'A').charAt(0).toUpperCase() %></span>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800"><%= blog.first_name %> <%= blog.last_name %></p>
+                        <p class="text-sm text-gray-600"><%= blog.blog_author %></p>
+                    </div>
+                    <button class="ml-6 bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Follow
+                    </button>
+                </div>
+            </div>
+
+            <!-- Featured Image -->
+            <% if (blog.blog_image) { %>
+            <div class="rounded-2xl h-64 md:h-96 flex items-center justify-center shadow-lg mb-8 overflow-hidden">
+                <img src="<%= blog.blog_image %>" alt="Blog featured image" class="w-full h-full object-cover">
+            </div>
+            <% } else { %>
+            <div class="bg-gradient-to-br from-sky-200 via-blue-200 to-indigo-200 rounded-2xl h-64 md:h-96 flex items-center justify-center shadow-lg mb-8">
+                <div class="text-center">
+                    <span class="text-8xl mb-4 block">📝</span>
+                    <p class="text-sky-800 font-medium text-lg">Blog Post</p>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </header>
+
+    <!-- Article Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <article class="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-8 md:p-12 mb-12">
+            <div class="prose prose-lg max-w-none">
+                <div class="text-gray-700 leading-relaxed mb-6 text-lg">
+                    <%- blog.blog_detail %>
+                </div>
+            </div>
+        </article>
+
+        <!-- Article Actions -->
+        <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <button class="flex items-center space-x-2 bg-sky-100 hover:bg-sky-200 text-sky-600 px-4 py-2 rounded-lg transition-colors">
+                        <span>👍</span>
+                        <span class="font-medium">Like (42)</span>
+                    </button>
+                    <button class="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg transition-colors">
+                        <span>💬</span>
+                        <span class="font-medium">Comment (8)</span>
+                    </button>
+                    <button class="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg transition-colors">
+                        <span>🔗</span>
+                        <span class="font-medium">Share</span>
+                    </button>
+                </div>
+                <button class="flex items-center space-x-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-600 px-4 py-2 rounded-lg transition-colors">
+                    <span>🔖</span>
+                    <span class="font-medium">Bookmark</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <section class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg p-6 md:p-8 mb-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-6">Comments (<%= comments.length %>)</h3>
+            
+            <!-- Comment Form -->
+            <div class="mb-8">
+                <form id="commentForm">
+                    <input type="hidden" id="blogId" value="<%= blog.idblog %>">
+                    <div class="grid md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" id="commentName" placeholder="Your Name" required
+                            class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                        <input type="email" id="commentEmail" placeholder="Your Email" required
+                            class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                    </div>
+                    <input type="url" id="commentWebsite" placeholder="Your Website (optional)"
+                        class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent mb-4">
+                    <textarea 
+                        id="commentMsg" 
+                        placeholder="Share your thoughts about this article..." 
+                        class="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"
+                        rows="3" required></textarea>
+                    <div class="flex justify-end mt-3">
+                        <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                            Post Comment
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Comments List -->
+            <div class="space-y-6">
+                <% if (comments && comments.length > 0) { %>
+                    <% comments.forEach(function(comment) { %>
+                    <div class="flex space-x-4">
+                        <div class="w-10 h-10 bg-sky-200 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-sky-600 font-medium text-sm"><%= comment.comment_name.charAt(0).toUpperCase() %></span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-medium text-gray-800"><%= comment.comment_name %></h4>
+                                    <% if (comment.comment_website) { %>
+                                        <a href="<%= comment.comment_website %>" target="_blank" class="text-sm text-sky-600 hover:text-sky-700">Website</a>
+                                    <% } %>
+                                </div>
+                                <p class="text-gray-700"><%= comment.comment_msg %></p>
+                            </div>
+                            <div class="flex items-center mt-2 space-x-4">
+                                <button class="text-sm text-gray-500 hover:text-sky-600 transition-colors">👍 Like</button>
+                                <button class="text-sm text-gray-500 hover:text-sky-600 transition-colors reply-btn" data-comment-id="<%= comment.idcomment %>">Reply</button>
+                            </div>
+                            
+                            <!-- Reply Form (Hidden by default) -->
+                            <div class="reply-form hidden mt-4 ml-4">
+                                <form class="reply-form-inner">
+                                    <input type="hidden" class="comment-id" value="<%= comment.idcomment %>">
+                                    <div class="grid md:grid-cols-2 gap-4 mb-4">
+                                        <input type="text" class="reply-name" placeholder="Your Name" required
+                                            class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                                        <input type="email" class="reply-email" placeholder="Your Email" required
+                                            class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                                    </div>
+                                    <textarea class="reply-msg" placeholder="Write a reply..." required
+                                        class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none" rows="2"></textarea>
+                                    <div class="flex justify-end mt-3 space-x-2">
+                                        <button type="button" class="cancel-reply bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">Cancel</button>
+                                        <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">Post Reply</button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- Replies -->
+                            <% if (comment.replies && comment.replies.length > 0) { %>
+                                <div class="ml-4 mt-4 space-y-4">
+                                    <% comment.replies.forEach(function(reply) { %>
+                                    <div class="flex space-x-3">
+                                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <span class="text-gray-600 font-medium text-xs"><%= reply.reply_name.charAt(0).toUpperCase() %></span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="bg-gray-100 rounded-lg p-3">
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <h5 class="font-medium text-gray-800 text-sm"><%= reply.reply_name %></h5>
+                                                </div>
+                                                <p class="text-gray-700 text-sm"><%= reply.reply_msg %></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% }); %>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="text-center py-8">
+                        <p class="text-gray-500">No comments yet. Be the first to comment!</p>
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="text-center mt-6">
+                <button class="text-sky-600 hover:text-sky-700 font-medium">Load More Comments</button>
+            </div>
+        </section>
+
+        <!-- Related Articles -->
+        <section class="mb-12">
+            <h3 class="text-2xl font-bold text-gray-800 mb-8">Related Articles</h3>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Related Article 1 -->
+                <article class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow group">
+                    <div class="h-32 bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center">
+                        <span class="text-3xl">🎨</span>
+                    </div>
+                    <div class="p-4">
+                        <span class="bg-purple-100 text-purple-600 px-2 py-1 rounded-full text-xs font-medium">Design</span>
+                        <h4 class="text-sm font-semibold text-gray-800 mt-2 mb-2 group-hover:text-sky-600 transition-colors">
+                            Modern UI Design Principles
+                        </h4>
+                        <p class="text-gray-600 text-xs mb-3">Learn the essential principles that make modern interfaces...</p>
+                        <button class="text-sky-600 hover:text-sky-700 text-xs font-medium">Read More →</button>
+                    </div>
+                </article>
+
+                <!-- Related Article 2 -->
+                <article class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow group">
+                    <div class="h-32 bg-gradient-to-br from-green-200 to-emerald-200 flex items-center justify-center">
+                        <span class="text-3xl">🚀</span>
+                    </div>
+                    <div class="p-4">
+                        <span class="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-medium">Startup</span>
+                        <h4 class="text-sm font-semibold text-gray-800 mt-2 mb-2 group-hover:text-sky-600 transition-colors">
+                            Building Your First SaaS Product
+                        </h4>
+                        <p class="text-gray-600 text-xs mb-3">A comprehensive guide to launching your software...</p>
+                        <button class="text-sky-600 hover:text-sky-700 text-xs font-medium">Read More →</button>
+                    </div>
+                </article>
+
+                <!-- Related Article 3 -->
+                <article class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow group">
+                    <div class="h-32 bg-gradient-to-br from-blue-200 to-indigo-200 flex items-center justify-center">
+                        <span class="text-3xl">🔧</span>
+                    </div>
+                    <div class="p-4">
+                        <span class="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs font-medium">Tools</span>
+                        <h4 class="text-sm font-semibold text-gray-800 mt-2 mb-2 group-hover:text-sky-600 transition-colors">
+                            Essential Developer Tools 2024
+                        </h4>
+                        <p class="text-gray-600 text-xs mb-3">Discover the must-have tools and extensions...</p>
+                        <button class="text-sky-600 hover:text-sky-700 text-xs font-medium">Read More →</button>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white/60 backdrop-blur-md border-t border-sky-100">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <h3 class="text-2xl font-bold text-sky-600 mb-4">SkyBlog</h3>
+                    <p class="text-gray-600 mb-4">A beautiful platform for sharing stories, insights, and connecting with fellow writers and readers.</p>
+                    <div class="flex space-x-4">
+                        <button class="w-10 h-10 bg-sky-100 hover:bg-sky-200 text-sky-600 rounded-full flex items-center justify-center transition-colors">
+                            <span class="text-sm font-bold">f</span>
+                        </button>
+                        <button class="w-10 h-10 bg-sky-100 hover:bg-sky-200 text-sky-600 rounded-full flex items-center justify-center transition-colors">
+                            <span class="text-sm font-bold">t</span>
+                        </button>
+                        <button class="w-10 h-10 bg-sky-100 hover:bg-sky-200 text-sky-600 rounded-full flex items-center justify-center transition-colors">
+                            <span class="text-sm font-bold">in</span>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-800 mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-sky-600 transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-sky-600 transition-colors">Write for Us</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-sky-600 transition-colors">Categories</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-sky-600 transition-colors">Newsletter</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-800 mb-4">Support</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-sky-600 transition-colors">Help Center</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-sky-600 transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-sky-600 transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-sky-600 transition-colors">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-sky-100 mt-8 pt-8 text-center">
+                <p class="text-gray-600">&copy; 2024 SkyBlog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Back button functionality
+        function goBack() {
+            window.history.back();
+        }
+
+        // Like button functionality
+        const likeBtn = document.querySelector('button:has(span:contains("👍"))');
+        let isLiked = false;
+        let likeCount = 42;
+
+        if (likeBtn) {
+            likeBtn.addEventListener('click', function() {
+                isLiked = !isLiked;
+                if (isLiked) {
+                    likeCount++;
+                    this.classList.remove('bg-sky-100', 'hover:bg-sky-200', 'text-sky-600');
+                    this.classList.add('bg-sky-500', 'text-white');
+                } else {
+                    likeCount--;
+                    this.classList.remove('bg-sky-500', 'text-white');
+                    this.classList.add('bg-sky-100', 'hover:bg-sky-200', 'text-sky-600');
+                }
+                this.querySelector('span:last-child').textContent = `Like (${likeCount})`;
+            });
+        }
+
+        // Bookmark functionality
+        const bookmarkBtn = document.querySelector('button:has(span:contains("🔖"))');
+        let isBookmarked = false;
+
+        if (bookmarkBtn) {
+            bookmarkBtn.addEventListener('click', function() {
+                isBookmarked = !isBookmarked;
+                if (isBookmarked) {
+                    this.classList.remove('bg-yellow-100', 'hover:bg-yellow-200', 'text-yellow-600');
+                    this.classList.add('bg-yellow-500', 'text-white');
+                    this.querySelector('span:last-child').textContent = 'Bookmarked';
+                } else {
+                    this.classList.remove('bg-yellow-500', 'text-white');
+                    this.classList.add('bg-yellow-100', 'hover:bg-yellow-200', 'text-yellow-600');
+                    this.querySelector('span:last-child').textContent = 'Bookmark';
+                }
+            });
+        }
+
+        // Comment functionality
+        const commentForm = document.querySelector('textarea');
+        const postCommentBtn = document.querySelector('button:contains("Post Comment")');
+
+        if (postCommentBtn && commentForm) {
+            postCommentBtn.addEventListener('click', function() {
+                const commentText = commentForm.value.trim();
+                if (commentText) {
+                    // Simulate posting comment
+                    this.textContent = 'Posting...';
+                    setTimeout(() => {
+                        this.textContent = 'Post Comment';
+                        commentForm.value = '';
+                        alert('Comment posted successfully!');
+                    }, 1000);
+                }
+            });
+        }
+
+        // Comment like functionality
+        document.querySelectorAll('button:contains("👍 Like")').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const currentText = this.textContent;
+                const match = currentText.match(/\((\d+)\)/);
+                if (match) {
+                    const currentCount = parseInt(match[1]);
+                    const newCount = currentCount + 1;
+                    this.textContent = currentText.replace(/\(\d+\)/, `(${newCount})`);
+                    this.classList.add('text-sky-600');
+                }
+            });
+        });
+
+        // Share functionality
+        const shareBtn = document.querySelector('button:has(span:contains("🔗"))');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', function() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'The Future of Web Development: Trends to Watch',
+                        text: 'Check out this amazing article about web development trends!',
+                        url: window.location.href
+                    });
+                } else {
+                    // Fallback for browsers that don't support Web Share API
+                    navigator.clipboard.writeText(window.location.href).then(() => {
+                        alert('Link copied to clipboard!');
+                    });
+                }
+            });
+        }
+
+        // Follow button functionality
+        const followBtn = document.querySelector('button:contains("Follow")');
+        let isFollowing = false;
+
+        if (followBtn) {
+            followBtn.addEventListener('click', function() {
+                isFollowing = !isFollowing;
+                if (isFollowing) {
+                    this.textContent = 'Following';
+                    this.classList.remove('bg-sky-500', 'hover:bg-sky-600');
+                    this.classList.add('bg-green-500', 'hover:bg-green-600');
+                } else {
+                    this.textContent = 'Follow';
+                    this.classList.remove('bg-green-500', 'hover:bg-green-600');
+                    this.classList.add('bg-sky-500', 'hover:bg-sky-600');
+                }
+            });
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Comment form submission
+        document.getElementById('commentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                idblog: document.getElementById('blogId').value,
+                comment_name: document.getElementById('commentName').value,
+                comment_email: document.getElementById('commentEmail').value,
+                comment_website: document.getElementById('commentWebsite').value,
+                comment_msg: document.getElementById('commentMsg').value
+            };
+            
+            fetch('/blogs/comment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Comment posted successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error posting comment: ' + error.message);
+            });
+        });
+
+        // Reply button functionality
+        document.querySelectorAll('.reply-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const replyForm = this.closest('.flex-1').querySelector('.reply-form');
+                replyForm.classList.toggle('hidden');
+            });
+        });
+
+        // Cancel reply functionality
+        document.querySelectorAll('.cancel-reply').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const replyForm = this.closest('.reply-form');
+                replyForm.classList.add('hidden');
+                // Clear form
+                replyForm.querySelector('.reply-name').value = '';
+                replyForm.querySelector('.reply-email').value = '';
+                replyForm.querySelector('.reply-msg').value = '';
+            });
+        });
+
+        // Reply form submission
+        document.querySelectorAll('.reply-form-inner').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    idcomment: this.querySelector('.comment-id').value,
+                    reply_name: this.querySelector('.reply-name').value,
+                    reply_email: this.querySelector('.reply-email').value,
+                    reply_msg: this.querySelector('.reply-msg').value
+                };
+                
+                fetch('/blogs/reply', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Reply posted successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error posting reply: ' + error.message);
+                });
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96a55a4114da799a',t:'MTc1NDM4NzAzMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

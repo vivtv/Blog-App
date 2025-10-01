@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write New Post - SkyBlog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="font-inter bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-4 text-gray-600 hover:text-sky-600 transition-colors">
+                        ← Back
+                    </button>
+                    <!-- <h1 class="text-2xl font-bold text-sky-600">SkyBlog</h1> -->
+                    <h1 class="text-2xl font-bold text-sky-600"><a href="/">SkyBlog</a></h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#"
+                            class="text-gray-700 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</a>
+                        <a href="#"
+                            class="text-gray-700 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">About</a>
+                        <a href="#"
+                            class="text-gray-700 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Categories</a>
+                        <a href="#"
+                            class="text-gray-700 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Contact</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button id="saveDraftBtn"
+                        class="text-gray-600 hover:text-sky-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Save Draft
+                    </button>
+                    <button id="previewBtn"
+                        class="border border-sky-500 text-sky-600 hover:bg-sky-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Preview
+                    </button>
+                    <button type="submit" id="publishBtn"
+                        class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Publish
+                    </button>
+                    <% if (user) { %>
+                    <button onclick="location.href='/logout'"
+                        class="border border-sky-500 text-sky-600 hover:bg-sky-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Logout
+                    </button>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Write Your Story</h2>
+            <p class="text-lg text-gray-600">Share your thoughts, insights, and ideas with the world</p>
+        </div>
+
+        <!-- Writing Form -->
+        <form id="postForm" class="space-y-6" action="/blogs/post" method="POST">
+            <!-- Title Input -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg p-6">
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Article Title</label>
+                <input type="text" id="title" name="title" placeholder="Enter your article title..."
+                    class="w-full text-2xl font-bold border-none outline-none bg-transparent placeholder-gray-400 focus:ring-0"
+                    maxlength="100">
+                <div class="text-right text-sm text-gray-500 mt-2">
+                    <span id="titleCount">0</span>/100 characters
+                </div>
+            </div>
+
+            <!-- Subtitle Input -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg p-6">
+                <label for="subtitle" class="block text-sm font-medium text-gray-700 mb-2">Subtitle (Optional)</label>
+                <input type="text" id="subtitle" name="subtitle" placeholder="Add a compelling subtitle..."
+                    class="w-full text-lg text-gray-600 border-none outline-none bg-transparent placeholder-gray-400 focus:ring-0"
+                    maxlength="200">
+                <div class="text-right text-sm text-gray-500 mt-2">
+                    <span id="subtitleCount">0</span>/200 characters
+                </div>
+            </div>
+
+            <!-- Category and Tags -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg p-6">
+                    <label for="category" class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <select id="category" name="category"
+                        class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                        <option value="">Select a category</option>
+                        <option value="technology">Technology</option>
+                        <option value="design">Design</option>
+                        <option value="startup">Startup</option>
+                        <option value="lifestyle">Lifestyle</option>
+                        <option value="tools">Tools</option>
+                        <option value="mobile">Mobile</option>
+                        <option value="tips">Tips</option>
+                    </select>
+                </div>
+                <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg p-6">
+                    <label for="tags" class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                    <input type="text" id="tags" name="tags" placeholder="web development, javascript, react"
+                        class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-1">Separate tags with commas</p>
+                </div>
+            </div>
+
+            <!-- Featured Image -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg p-6">
+                <label class="block text-sm font-medium text-gray-700 mb-4">Featured Image</label>
+                <div id="imageUploadArea"
+                    class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-sky-400 transition-colors cursor-pointer">
+                    <div id="imagePreview" class="hidden">
+                        <div class="relative inline-block">
+                            <img id="previewImg" src="" alt="Preview" class="max-h-48 rounded-lg shadow-md">
+                            <button type="button" id="removeImage"
+                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600">
+                                ×
+                            </button>
+                        </div>
+                    </div>
+                    <div id="uploadPrompt">
+                        <div class="w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl text-sky-600">📷</span>
+                        </div>
+                        <p class="text-gray-600 mb-2">Click to upload or drag and drop</p>
+                        <p class="text-sm text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" class="hidden">
+                </div>
+            </div>
+
+            <!-- Content Editor -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden">
+                <!-- Editor Toolbar -->
+                <div class="border-b border-gray-200 p-4">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" class="editor-btn" data-command="bold" title="Bold">
+                            <strong>B</strong>
+                        </button>
+                        <button type="button" class="editor-btn" data-command="italic" title="Italic">
+                            <em>I</em>
+                        </button>
+                        <button type="button" class="editor-btn" data-command="underline" title="Underline">
+                            <u>U</u>
+                        </button>
+                        <div class="w-px h-6 bg-gray-300 mx-2"></div>
+                        <button type="button" class="editor-btn" data-command="formatBlock" data-value="h2"
+                            title="Heading 2">
+                            H2
+                        </button>
+                        <button type="button" class="editor-btn" data-command="formatBlock" data-value="h3"
+                            title="Heading 3">
+                            H3
+                        </button>
+                        <div class="w-px h-6 bg-gray-300 mx-2"></div>
+                        <button type="button" class="editor-btn" data-command="insertUnorderedList" title="Bullet List">
+                            • List
+                        </button>
+                        <button type="button" class="editor-btn" data-command="insertOrderedList" title="Numbered List">
+                            1. List
+                        </button>
+                        <div class="w-px h-6 bg-gray-300 mx-2"></div>
+                        <button type="button" class="editor-btn" data-command="createLink" title="Insert Link">
+                            🔗 Link
+                        </button>
+                        <button type="button" class="editor-btn" id="insertQuoteBtn" title="Insert Quote">
+                            💬 Quote
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Editor Content -->
+                <div class="p-6">
+                    <label for="content" class="block text-sm font-medium text-gray-700 mb-2">Article Content</label>
+                    <div id="contentEditor" contenteditable="true"
+                        class="min-h-96 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none prose prose-lg max-w-none"
+                        placeholder="Start writing your article..."></div>
+                    <input type="hidden" id="content" name="content">
+                    <div class="flex justify-between items-center mt-4 text-sm text-gray-500">
+                        <span>Use the toolbar above to format your text</span>
+                        <span id="wordCount">0 words</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Publishing Options -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Publishing Options</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="flex items-center space-x-3">
+                            <input type="checkbox" id="allowComments" name="allowComments" checked
+                                class="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500">
+                            <span class="text-gray-700">Allow comments</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label class="flex items-center space-x-3">
+                            <input type="checkbox" id="featuredPost" name="featuredPost"
+                                class="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500">
+                            <span class="text-gray-700">Mark as featured post</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label class="flex items-center space-x-3">
+                            <input type="checkbox" id="newsletter" name="newsletter"
+                                class="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500">
+                            <span class="text-gray-700">Send to newsletter subscribers</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label for="publishDate" class="block text-sm font-medium text-gray-700 mb-1">Publish
+                            Date</label>
+                        <input type="datetime-local" id="publishDate" name="publishDate"
+                            class="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEO Settings -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">SEO Settings</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label for="metaDescription" class="block text-sm font-medium text-gray-700 mb-2">Meta
+                            Description</label>
+                        <textarea id="metaDescription" name="metaDescription" rows="3"
+                            placeholder="Write a compelling description for search engines..."
+                            class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"
+                            maxlength="160"></textarea>
+                        <div class="text-right text-sm text-gray-500 mt-1">
+                            <span id="metaCount">0</span>/160 characters
+                        </div>
+                    </div>
+                    <div>
+                        <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">URL Slug</label>
+                        <div class="flex items-center">
+                            <span class="text-gray-500 text-sm">skyblog.com/</span>
+                            <input type="text" id="slug" name="slug" placeholder="your-article-url"
+                                class="flex-1 p-3 border border-gray-200 rounded-r-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+                <button type="button" id="saveDraftBtnBottom"
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-medium transition-colors">
+                    Save as Draft
+                </button>
+                <button type="button" id="previewBtnBottom"
+                    class="border-2 border-sky-500 text-sky-600 hover:bg-sky-50 px-8 py-3 rounded-lg font-medium transition-colors">
+                    Preview Post
+                </button>
+                <button type="submit"
+                    class="bg-sky-500 hover:bg-sky-600 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                    Publish Post
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                <div class="flex items-center justify-between p-6 border-b">
+                    <h3 class="text-xl font-bold text-gray-800">Preview Post</h3>
+                    <button id="closePreview" class="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                </div>
+                <div id="previewContent" class="p-6 overflow-y-auto max-h-[70vh]">
+                    <!-- Preview content will be inserted here -->
+                </div>
+                <div class="flex justify-end gap-4 p-6 border-t bg-gray-50">
+                    <button id="editPost" class="text-gray-600 hover:text-gray-800 px-4 py-2 rounded-lg font-medium">
+                        Continue Editing
+                    </button>
+                    <button id="publishFromPreview"
+                        class="bg-sky-500 hover:bg-sky-600 text-white px-6 py-2 rounded-lg font-medium">
+                        Publish Post
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Character counters
+        function setupCharacterCounter(inputId, counterId, maxLength) {
+            const input = document.getElementById(inputId);
+            const counter = document.getElementById(counterId);
+
+            input.addEventListener('input', function () {
+                const length = this.value.length;
+                counter.textContent = length;
+
+                if (length > maxLength * 0.9) {
+                    counter.classList.add('text-red-500');
+                } else {
+                    counter.classList.remove('text-red-500');
+                }
+            });
+        }
+
+        setupCharacterCounter('title', 'titleCount', 100);
+        setupCharacterCounter('subtitle', 'subtitleCount', 200);
+        setupCharacterCounter('metaDescription', 'metaCount', 160);
+
+        // Auto-generate slug from title
+        document.getElementById('title').addEventListener('input', function () {
+            const slug = this.value
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim();
+            document.getElementById('slug').value = slug;
+        });
+
+        // Image upload functionality
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadPrompt = document.getElementById('uploadPrompt');
+        const previewImg = document.getElementById('previewImg');
+        const removeImageBtn = document.getElementById('removeImage');
+        let uploadedImageUrl = null;
+
+        imageUploadArea.addEventListener('click', () => imageInput.click());
+
+        imageInput.addEventListener('change', async function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Show local preview immediately
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                previewImg.src = ev.target.result;
+                imagePreview.classList.remove('hidden');
+                uploadPrompt.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+
+            // Upload to server
+            try {
+                const fd = new FormData();
+                fd.append('image', file);
+                const resp = await fetch('/blogs/upload-image', { method: 'POST', body: fd });
+                const data = await resp.json();
+                if (!resp.ok || !data.success) throw new Error(data.message || 'Upload failed');
+                uploadedImageUrl = data.url;
+                // Swap preview to use served URL
+                previewImg.src = uploadedImageUrl;
+            } catch (err) {
+                alert('Image upload failed: ' + err.message);
+                uploadedImageUrl = null;
+            }
+        });
+
+        removeImageBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            imageInput.value = '';
+            imagePreview.classList.add('hidden');
+            uploadPrompt.classList.remove('hidden');
+        });
+
+        // Drag and drop functionality
+        imageUploadArea.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            this.classList.add('border-sky-400', 'bg-sky-50');
+        });
+
+        imageUploadArea.addEventListener('dragleave', function (e) {
+            e.preventDefault();
+            this.classList.remove('border-sky-400', 'bg-sky-50');
+        });
+
+        imageUploadArea.addEventListener('drop', function (e) {
+            e.preventDefault();
+            this.classList.remove('border-sky-400', 'bg-sky-50');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                imageInput.files = files;
+                imageInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Rich text editor functionality
+        const contentEditor = document.getElementById('contentEditor');
+        const editorButtons = document.querySelectorAll('.editor-btn');
+
+        // Style editor buttons
+        editorButtons.forEach(btn => {
+            btn.className += ' px-3 py-1 text-sm border border-gray-200 rounded hover:bg-gray-100 transition-colors';
+        });
+
+        editorButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const command = this.dataset.command;
+                const value = this.dataset.value;
+
+                if (command === 'createLink') {
+                    const url = prompt('Enter URL:');
+                    if (url) {
+                        document.execCommand(command, false, url);
+                    }
+                } else {
+                    document.execCommand(command, false, value);
+                }
+
+                contentEditor.focus();
+            });
+        });
+
+        // Insert quote functionality
+        document.getElementById('insertQuoteBtn').addEventListener('click', function (e) {
+            e.preventDefault();
+            const quote = prompt('Enter your quote:');
+            if (quote) {
+                const quoteHtml = `<blockquote style="border-left: 4px solid #0ea5e9; padding-left: 1rem; margin: 1rem 0; font-style: italic; color: #0c4a6e;">${quote}</blockquote>`;
+                document.execCommand('insertHTML', false, quoteHtml);
+            }
+            contentEditor.focus();
+        });
+
+        // Word counter
+        function updateWordCount() {
+            const text = contentEditor.textContent || contentEditor.innerText || '';
+            const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+            document.getElementById('wordCount').textContent = `${words.length} words`;
+        }
+
+        contentEditor.addEventListener('input', updateWordCount);
+
+        // Placeholder functionality for contenteditable
+        contentEditor.addEventListener('focus', function () {
+            if (this.textContent === '') {
+                this.innerHTML = '';
+            }
+        });
+
+        contentEditor.addEventListener('blur', function () {
+            if (this.textContent === '') {
+                this.innerHTML = '<p style="color: #9ca3af;">Start writing your article...</p>';
+            }
+        });
+
+        // Initialize placeholder
+        contentEditor.innerHTML = '<p style="color: #9ca3af;">Start writing your article...</p>';
+
+        // Preview functionality
+        function showPreview() {
+            const title = document.getElementById('title').value;
+            const subtitle = document.getElementById('subtitle').value;
+            const category = document.getElementById('category').value;
+            const content = contentEditor.innerHTML;
+            const imageUrl = previewImg.src;
+
+            const previewHTML = `
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-8">
+                        ${category ? `<span class="bg-sky-100 text-sky-600 px-4 py-2 rounded-full text-sm font-medium">${category.charAt(0).toUpperCase() + category.slice(1)}</span>` : ''}
+                        <h1 class="text-4xl font-bold text-gray-800 mt-4 mb-4">${title || 'Your Article Title'}</h1>
+                        ${subtitle ? `<p class="text-xl text-gray-600">${subtitle}</p>` : ''}
+                    </div>
+                    ${imageUrl && !imageUrl.includes('data:') ? '' : imageUrl ? `<img src="${imageUrl}" alt="Featured image" class="w-full h-64 object-cover rounded-lg mb-8">` : ''}
+                    <div class="prose prose-lg max-w-none">
+                        ${content.replace('<p style="color: #9ca3af;">Start writing your article...</p>', '<p class="text-gray-500 italic">Start writing your content...</p>')}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('previewContent').innerHTML = previewHTML;
+            document.getElementById('previewModal').classList.remove('hidden');
+        }
+
+        // Preview modal controls
+        document.getElementById('previewBtn').addEventListener('click', showPreview);
+        document.getElementById('previewBtnBottom').addEventListener('click', showPreview);
+
+        document.getElementById('closePreview').addEventListener('click', function () {
+            document.getElementById('previewModal').classList.add('hidden');
+        });
+
+        document.getElementById('editPost').addEventListener('click', function () {
+            document.getElementById('previewModal').classList.add('hidden');
+        });
+
+        // Save draft functionality
+        function saveDraft() {
+            const formData = new FormData(document.getElementById('postForm'));
+            const draftData = {
+                title: formData.get('title'),
+                subtitle: formData.get('subtitle'),
+                category: formData.get('category'),
+                content: contentEditor.innerHTML,
+                timestamp: new Date().toISOString()
+            };
+
+            localStorage.setItem('blogDraft', JSON.stringify(draftData));
+
+            // Show save confirmation
+            const originalText = event.target.textContent;
+            event.target.textContent = 'Saved!';
+            event.target.classList.add('text-green-600');
+
+            setTimeout(() => {
+                event.target.textContent = originalText;
+                event.target.classList.remove('text-green-600');
+            }, 2000);
+        }
+
+        document.getElementById('saveDraftBtn').addEventListener('click', saveDraft);
+        document.getElementById('saveDraftBtnBottom').addEventListener('click', saveDraft);
+
+        // Load draft on page load
+        window.addEventListener('load', function () {
+            const savedDraft = localStorage.getItem('blogDraft');
+            if (savedDraft) {
+                const draftData = JSON.parse(savedDraft);
+                document.getElementById('title').value = draftData.title || '';
+                document.getElementById('subtitle').value = draftData.subtitle || '';
+                document.getElementById('category').value = draftData.category || '';
+                if (draftData.content && draftData.content !== '<p style="color: #9ca3af;">Start writing your article...</p>') {
+                    contentEditor.innerHTML = draftData.content;
+                }
+                updateWordCount();
+            }
+        });
+
+        // Auto-save every 30 seconds
+        setInterval(function () {
+            const title = document.getElementById('title').value;
+            const content = contentEditor.textContent;
+
+            if (title.trim() || content.trim()) {
+                const formData = new FormData(document.getElementById('postForm'));
+                const draftData = {
+                    title: formData.get('title'),
+                    subtitle: formData.get('subtitle'),
+                    category: formData.get('category'),
+                    content: contentEditor.innerHTML,
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem('blogDraft', JSON.stringify(draftData));
+            }
+        }, 30000);
+
+        // Form submission
+        document.getElementById('postForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value.trim();
+            const content = contentEditor.innerHTML.trim();
+            const category = document.getElementById('category').value;
+            const tags = document.getElementById('tags').value;
+            
+            if (!title) {
+                alert('Please enter a title for your post.');
+                document.getElementById('title').focus();
+                return;
+            }
+
+            if (!content || content === 'Start writing your article...') {
+                alert('Please write some content for your post.');
+                contentEditor.focus();
+                return;
+            }
+
+            if (!category) {
+                alert('Please select a category for your post.');
+                document.getElementById('category').focus();
+                return;
+            }
+
+            // Use uploaded image URL if available
+            const imageUrl = previewImg.src;
+            const blog_image = uploadedImageUrl || (imageUrl && !imageUrl.startsWith('data:') ? imageUrl : null);
+
+            // Prepare the data
+            const formData = {
+                title,
+                content,
+                category,
+                blog_tag: tags,
+                blog_image
+            };
+
+            // Show publishing status
+            const publishBtn = document.querySelector('button[type="submit"]');
+            const originalText = publishBtn.textContent;
+            publishBtn.textContent = 'Publishing...';
+            publishBtn.disabled = true;
+
+            // Send the data to the server
+            fetch('/blogs/post', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('🎉 Your post has been published successfully!');
+                    localStorage.removeItem('blogDraft');
+                    window.location.href = '/';
+                } else {
+                    throw new Error(data.message || 'Error publishing post');
+                }
+            })
+            .catch(error => {
+                alert('Error publishing post: ' + error.message);
+            })
+            .finally(() => {
+                publishBtn.textContent = originalText;
+                publishBtn.disabled = false;
+            });
+        });
+
+        // Publish from preview
+        document.getElementById('publishFromPreview').addEventListener('click', function () {
+            document.getElementById('previewModal').classList.add('hidden');
+            document.getElementById('postForm').dispatchEvent(new Event('submit'));
+        });
+
+        // Back button
+        function goBack() {
+            window.history.back();
+        }
+
+        // Set default publish date to now
+        document.getElementById('publishDate').value = new Date().toISOString().slice(0, 16);
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'96a55ff4732b799a',t:'MTc1NDM4NzI2NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+    <script>
+        document.getElementById('postForm').addEventListener('submit', function () {
+            document.getElementById('content').value = document.getElementById('contentEditor').innerHTML;
+        });
+    </script>
+
+</body>
+
+</html>
